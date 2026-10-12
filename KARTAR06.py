@@ -1,6 +1,7 @@
 from datetime import datetime
 import io
 import pandas as pd
+import pytz
 import streamlit as st
 from streamlit_autorefresh import st_autorefresh
 
@@ -9,8 +10,11 @@ st.set_page_config(
     page_title="Aplikasi Toko Sembako - Karang Taruna", layout="wide"
 )
 
-# Fitur Auto-Refresh setiap 1 detik agar jam digital berjalan real-time di layar
+# Fitur Auto-Refresh setiap 1 detik agar jam digital berjalan real-time
 st_autorefresh(interval=1000, key="datetimerefresh")
+
+# Zona Waktu Indonesia Barat (WIB)
+wib_tz = pytz.timezone("Asia/Jakarta")
 
 # Konversi hari ke Bahasa Indonesia
 days_indo = {
@@ -96,16 +100,16 @@ if "riwayat" not in st.session_state:
 
 st.title("🛒 Aplikasi Manajemen & Penjualan - GEN Z KARANG TARUNA")
 
-# --- JAM DIGITAL & HARI BERJALAN DI SIDEBAR ---
+# --- JAM DIGITAL & HARI BERJALAN (AKURAT SESUAI WIB) ---
 st.sidebar.header("🕒 Waktu Sistem")
-now = datetime.now()
-hari_eng = now.strftime("%A")
+now_wib = datetime.now(wib_tz)
+hari_eng = now_wib.strftime("%A")
 hari_id = days_indo.get(hari_eng, hari_eng)
-tanggal_str = now.strftime("%Y-%m-%d")
-jam_str = now.strftime("%H:%M:%S")
+tanggal_str = now_wib.strftime("%Y-%m-%d")
+jam_str = now_wib.strftime("%H:%M:%S")
 
 st.sidebar.markdown(f"**📅 {hari_id}, {tanggal_str}**")
-st.sidebar.markdown(f"**⏰ Jam: {jam_str}**")
+st.sidebar.markdown(f"**⏰ Jam: {jam_str} WIB**")
 
 st.sidebar.markdown("---")
 st.sidebar.header("Navigasi Menu")
@@ -151,12 +155,13 @@ elif menu == "Catat Transaksi (Masuk/Keluar)":
   ket = st.text_input("Keterangan (Opsional)")
 
   if st.button("Simpan Transaksi"):
-    nama_hari = days_indo[datetime.now().strftime("%A")]
+    waktu_wib = datetime.now(wib_tz)
+    nama_hari = days_indo[waktu_wib.strftime("%A")]
     waktu = (
         f"{nama_hari}, "
-        + datetime.now().strftime("%Y-%m-%d")
+        + waktu_wib.strftime("%Y-%m-%d")
         + " "
-        + datetime.now().strftime("%H:%M:%S")
+        + waktu_wib.strftime("%H:%M:%S")
     )
 
     if jenis == "Barang Masuk (Restock)":
